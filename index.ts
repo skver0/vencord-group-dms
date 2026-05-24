@@ -1,4 +1,3 @@
-import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 const STYLE_ID = "vencord-group-dms-style";
@@ -150,7 +149,7 @@ function stopObservers() {
 export default definePlugin({
     name: "Group DMs Tab",
     description: "Adds a Groups tab to Friends that toggles group DM visibility.",
-    authors: [Devs.author],
+    authors: [{ name: "skver", id: 212558627016409088n }],
     start() {
         injectStyle();
         ensureGroupTab();

@@ -89,7 +89,7 @@ function syncRootCollapseState() {
 
     if (!root || !groupMessagesSection) return;
 
-    root.classList.toggle(COLLAPSED_GROUPS_CLASS, groupMessagesSection.classList.contains("collapsed"));
+    root.classList.add(COLLAPSED_GROUPS_CLASS);
 }
 
 function ensurePanel() {
@@ -140,6 +140,8 @@ function ensurePanel() {
             root.appendChild(panel);
         }
     }
+
+    root.classList.add(COLLAPSED_GROUPS_CLASS);
 
     const groupMessagesSection = document.getElementById(GROUP_MESSAGES_SECTION_ID);
     if (!groupMessagesSection) return;

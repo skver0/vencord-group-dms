@@ -11,7 +11,8 @@
   display: none !important;
 }
 
-.privateChannels_e6b769.vc-group-dms-hide-groups #vc-group-dms-group-messages {
+.privateChannels_e6b769.vc-group-dms-hide-groups
+  li.channel__972a0.dm__972a0:has(a[aria-label*="(group message)"]) {
   display: none !important;
 }
 

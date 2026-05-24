@@ -1,19 +1,16 @@
 import "./style.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { Button } from "@components/Button";
-import { Divider } from "@components/Divider";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 import { Channel } from "@vencord/discord-types";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
-import { Avatar, ChannelStore, IconUtils, React, RelationshipStore, Text, UserStore, createRoot } from "@webpack/common";
+import { ChannelStore, IconUtils, RelationshipStore, UserStore } from "@webpack/common";
 
 const PrivateChannelSortStore = findStoreLazy("PrivateChannelSortStore") as { getPrivateChannelIds: () => string[]; };
 const SelectedChannelActionCreators = findByPropsLazy("selectPrivateChannel");
 let sidebarObserver: MutationObserver | undefined;
 let sidebarMount: HTMLDivElement | undefined;
-let sidebarRoot: ReturnType<typeof createRoot> | undefined;
 let mountRetryHandle: number | undefined;
 
 const settings = definePluginSettings({
@@ -55,68 +52,78 @@ function getDirectDMCount() {
     return PrivateChannelSortStore.getPrivateChannelIds().filter(channelId => !ChannelStore.getChannel(channelId)?.isGroupDM?.()).length;
 }
 
-function GroupDMRow({ channel }: { channel: Channel; }) {
-    const openChannel = () => SelectedChannelActionCreators.selectPrivateChannel(channel.id);
-
-    return React.createElement(
-        Button,
-        {
-            variant: "none",
-            size: "min",
-            className: "vc-group-dms-row",
-            onClick: openChannel,
-            title: getGroupDMName(channel),
-            type: "button",
-        },
-        React.createElement(Avatar, {
-            src: IconUtils.getChannelIconURL({ id: channel.id, icon: channel.icon, size: 32 }),
-            size: "SIZE_32",
-            className: "vc-group-dms-row-icon"
-        }),
-        React.createElement(
-            "div",
-            { className: "vc-group-dms-row-meta" },
-            React.createElement("div", { className: "vc-group-dms-row-name" }, getShortGroupDMName(channel)),
-            React.createElement(Text, { variant: "text-xs/medium", className: "vc-group-dms-row-subtitle" }, `${channel.recipients.length + 1} Members`)
-        )
-    );
+function createClassDiv(className: string) {
+    const element = document.createElement("div");
+    element.className = className;
+    return element;
 }
 
-function GroupsPanel() {
-    const [collapsed, setCollapsed] = React.useState(settings.store.groupCollapsed);
+function renderGroupDMRow(channel: Channel) {
+    const openChannel = () => SelectedChannelActionCreators.selectPrivateChannel(channel.id);
+
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "vc-btn-base vc-btn-none vc-btn-min vc-group-dms-row";
+    row.title = getGroupDMName(channel);
+    row.addEventListener("click", openChannel);
+
+    const icon = document.createElement("img");
+    icon.className = "vc-group-dms-row-icon";
+    icon.src = IconUtils.getChannelIconURL({ id: channel.id, icon: channel.icon, size: 32 }) ?? "";
+    icon.alt = "";
+
+    const meta = createClassDiv("vc-group-dms-row-meta");
+    const name = createClassDiv("vc-group-dms-row-name");
+    name.textContent = getShortGroupDMName(channel);
+    const subtitle = createClassDiv("vc-group-dms-row-subtitle");
+    subtitle.textContent = `${channel.recipients.length + 1} Members`;
+    meta.append(name, subtitle);
+
+    row.append(icon, meta);
+    return row;
+}
+
+function renderGroupsPanelDom() {
+    if (!sidebarMount) return;
+
+    const collapsed = settings.store.groupCollapsed;
     const groupDMs = getGroupDMs();
 
-    React.useEffect(() => {
-        settings.store.groupCollapsed = collapsed;
-    }, [collapsed]);
+    const panel = document.createElement("div");
+    panel.className = "vc-group-dms-panel";
 
-    return React.createElement(
-        "div",
-        { className: "vc-group-dms-panel" },
-        React.createElement(
-            Button,
-            {
-                variant: "none",
-                size: "min",
-                className: "vc-group-dms-panel-header",
-                onClick: () => setCollapsed(current => !current),
-                type: "button",
-                title: "Groups",
-            },
-            React.createElement("span", { className: "vc-group-dms-panel-title" }, `Groups (${groupDMs.length})`),
-            React.createElement("span", { className: "vc-group-dms-collapse-icon", "aria-hidden": true }, collapsed ? "▸" : "▾")
-        ),
-        !collapsed && React.createElement(
-            React.Fragment,
-            null,
-            React.createElement(Divider, { className: "vc-group-dms-panel-divider" }),
-            React.createElement(
-                "div",
-                { className: "vc-group-dms-list" },
-                groupDMs.map(channel => React.createElement(GroupDMRow, { key: channel.id, channel }))
-            )
-        )
-    );
+    const header = document.createElement("button");
+    header.type = "button";
+    header.className = "vc-btn-base vc-btn-none vc-btn-min vc-group-dms-panel-header";
+    header.title = "Groups";
+    header.setAttribute("aria-expanded", String(!collapsed));
+    header.addEventListener("click", () => {
+        settings.store.groupCollapsed = !settings.store.groupCollapsed;
+        renderGroupsPanelDom();
+    });
+
+    const title = createClassDiv("vc-group-dms-panel-title");
+    title.textContent = `Groups (${groupDMs.length})`;
+
+    const chevron = createClassDiv("vc-group-dms-collapse-icon");
+    chevron.setAttribute("aria-hidden", "true");
+    chevron.textContent = collapsed ? "▸" : "▾";
+
+    header.append(title, chevron);
+    panel.append(header);
+
+    if (!collapsed) {
+        const divider = document.createElement("hr");
+        divider.className = "vc-divider vc-group-dms-panel-divider";
+        panel.append(divider);
+
+        const list = document.createElement("div");
+        list.className = "vc-group-dms-list";
+        for (const channel of groupDMs) list.append(renderGroupDMRow(channel));
+        panel.append(list);
+    }
+
+    sidebarMount.replaceChildren(panel);
 }
 
 function mountGroupsPanel() {
@@ -139,11 +146,7 @@ function mountGroupsPanel() {
         }
     }
 
-    if (!sidebarRoot) {
-        sidebarRoot = createRoot(sidebarMount);
-    }
-
-    sidebarRoot.render(React.createElement(GroupsPanel));
+    renderGroupsPanelDom();
     return true;
 }
 
@@ -173,8 +176,6 @@ function stopSidebarObserver() {
         cancelAnimationFrame(mountRetryHandle);
         mountRetryHandle = undefined;
     }
-    sidebarRoot?.unmount();
-    sidebarRoot = undefined;
     sidebarMount?.remove();
     sidebarMount = undefined;
 }

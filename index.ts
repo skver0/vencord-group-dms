@@ -41,6 +41,20 @@ function getGroupDMName(channel: Channel) {
         .join(", ");
 }
 
+function getShortGroupDMName(channel: Channel) {
+    if (channel.name) return channel.name;
+
+    const recipients = channel.recipients
+        .map(UserStore.getUser)
+        .filter(Boolean)
+        .map((user: any) => RelationshipStore.getNickname(user.id) || user.username || user.globalName || user.displayName || user.id);
+
+    const head = recipients.slice(0, 2).join(", ");
+    const remaining = recipients.length - 2;
+
+    return remaining > 0 ? `${head} +${remaining}` : head;
+}
+
 export default definePlugin({
     name: "GroupDMs",
     description: "Splits the private channels list into collapsible Direct Messages and Group DMs sections.",
@@ -87,6 +101,8 @@ export default definePlugin({
 
     sections: null as number[] | null,
     instance: null as any,
+    directSectionIndex: null as number | null,
+    groupSectionIndex: null as number | null,
 
     useGroupDMs() {
         forceUpdateGroupDms = useForceUpdater();
@@ -122,11 +138,14 @@ export default definePlugin({
     makeProps(instance: any, { sections }: { sections: number[]; }) {
         this.instance = instance;
         this.sections = sections;
+        this.directSectionIndex = sections.length - 1;
 
-        this.sections.splice(1, 0, ...this.getSections());
+        this.sections.push(...this.getSections());
+
+        this.groupSectionIndex = this.sections.length - 1;
 
         if (this.getDirectDMCount() === 0) {
-            this.sections[this.sections.length - 1] = 0;
+            this.sections[this.directSectionIndex] = 0;
         }
 
         return {
@@ -150,7 +169,7 @@ export default definePlugin({
     },
 
     isGroupDMSection(sectionIndex: number) {
-        return this.sections != null && sectionIndex === 1;
+        return this.groupSectionIndex != null && sectionIndex === this.groupSectionIndex;
     },
 
     isGroupDMIndex(sectionIndex: number) {
@@ -158,7 +177,7 @@ export default definePlugin({
     },
 
     isDirectDMSection(sectionIndex: number) {
-        return this.sections != null && sectionIndex === this.sections.length - 1;
+        return this.directSectionIndex != null && sectionIndex === this.directSectionIndex;
     },
 
     isChannelHidden(sectionIndex: number, _rowIndex: number) {
@@ -194,6 +213,7 @@ export default definePlugin({
                     size: "min",
                     className: classes(headerClasses.privateChannelsHeaderContainer, "vc-group-dms-section-container", collapsed && "vc-group-dms-collapsed"),
                     onClick: () => self.toggleGroupCollapse(),
+                    title: "Group DMs",
                     type: "button",
                 },
                 React.createElement("span", { className: "vc-group-dms-section-header" },
@@ -222,6 +242,7 @@ export default definePlugin({
                     size: "min",
                     className: "vc-group-dms-row",
                     onClick: openChannel,
+                    title: getGroupDMName(channel),
                     onKeyDown: (event: any) => {
                         if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
@@ -240,7 +261,7 @@ export default definePlugin({
                 React.createElement(
                     "div",
                     { className: "vc-group-dms-row-meta" },
-                    React.createElement("div", { className: "vc-group-dms-row-name" }, getGroupDMName(channel)),
+                    React.createElement("div", { className: "vc-group-dms-row-name" }, getShortGroupDMName(channel)),
                     React.createElement(Text, { variant: "text-xs/medium", className: "vc-group-dms-row-subtitle" }, `${channel.recipients.length + 1} Members`)
                 )
             );

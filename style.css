@@ -1,17 +1,17 @@
-#vc-group-dms-panel {
+.vc-group-dms-panel {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin: 8px 0 0;
-  padding: 0 6px 8px;
+  margin: 6px 8px 8px;
+  padding: 0;
 }
 
-.privateChannels_e6b769.vc-group-dms-collapsed li.channel__972a0.dm__972a0 {
+.privateChannels_e6b769.vc-group-dms-hide-direct
+  li.channel__972a0.dm__972a0:has(a[aria-label*="(direct message)"]) {
   display: none !important;
 }
 
-.privateChannels_e6b769.vc-group-dms-groups-collapsed
-  #vc-group-dms-group-messages {
+.privateChannels_e6b769.vc-group-dms-hide-groups #vc-group-dms-group-messages {
   display: none !important;
 }
 
@@ -37,6 +37,7 @@
   border-radius: 4px;
 }
 
+.vc-group-dms-direct-header.collapsed [data-vc-gdm-toggle-icon],
 .vc-group-dms-section-header.collapsed [data-vc-gdm-toggle-icon] {
   transform: rotate(-90deg);
 }
@@ -58,7 +59,7 @@
 
 .vc-group-dms-separator {
   height: 1px;
-  margin: 4px 8px;
+  margin: 2px 8px;
   background: var(--background-modifier-accent);
   opacity: 0.45;
 }

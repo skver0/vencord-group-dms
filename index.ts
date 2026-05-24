@@ -71,7 +71,6 @@ function renderGroupDMRow(channel: Channel) {
         },
         React.createElement(Avatar, {
             src: IconUtils.getChannelIconURL({ id: channel.id, icon: channel.icon, size: 32 }) ?? "",
-            size: "SIZE_32",
             className: "vc-group-dms-row-icon"
         }),
         React.createElement(

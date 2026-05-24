@@ -144,6 +144,10 @@ export default definePlugin({
 
         this.groupSectionIndex = this.sections.length - 1;
 
+        if (this.groupSectionIndex != null) {
+            this.sections[this.groupSectionIndex] = settings.store.groupCollapsed ? 0 : this.getGroupDMs().length || 1;
+        }
+
         if (this.getDirectDMCount() === 0) {
             this.sections[this.directSectionIndex] = 0;
         }

@@ -1,7 +1,10 @@
-.vc-group-dms-section-container {
+.vc-group-dms-section-container.vc-btn-base {
   width: 100%;
-  padding: 0 8px;
+  max-width: none;
+  box-sizing: border-box;
+  align-self: stretch;
   justify-content: flex-start;
+  padding: 0;
 }
 
 .vc-group-dms-section-header {
@@ -9,7 +12,8 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 6px 0;
+  padding: 6px 8px;
+  box-sizing: border-box;
 }
 
 .vc-group-dms-section-header .headerText {
@@ -30,14 +34,17 @@
   transform: rotate(-90deg);
 }
 
-.vc-group-dms-row {
+.vc-group-dms-row.vc-btn-base {
   display: flex;
   align-items: center;
   gap: 14px;
   min-height: 32px;
   padding: 7px 10px 7px 8px;
   width: 100%;
+  max-width: none;
   justify-content: flex-start;
+  box-sizing: border-box;
+  align-self: stretch;
 }
 
 .vc-group-dms-row:hover {

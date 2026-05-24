@@ -7,6 +7,11 @@
   padding: 0;
 }
 
+.vc-group-dms-direct-section,
+.vc-group-dms-group-section {
+  display: flex;
+}
+
 .vc-group-dms-section-header {
   display: flex;
   align-items: center;

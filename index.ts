@@ -75,16 +75,12 @@ export default definePlugin({
                 replace: "...$self.makeProps(this,{$&})"
             },
             {
-                match: /renderSection(?:",|=).{0,300}?"span",{/,
-                replace: "$&...$self.makeDirectSpanProps(),"
-            },
-            {
                 match: /renderRow(?:",|=)(\i)=>{(?<=renderDM(?:",|=).+?(\i\.\i),\{channel:.+?)/,
                 replace: "$&if($self.isGroupDMIndex($1.section))return $self.renderGroupDMRow($1.section,$1.row,$2)();"
             },
             {
-                match: /renderSection(?:",|=)(\i)=>{/,
-                replace: "$&if($self.isGroupDMSection($1.section))return $self.renderGroupDMSection($1);"
+                match: /renderSection(?:\",|=)(\i)=>{/,
+                replace: "$&if($self.isDirectDMSection($1.section))return $self.renderDirectDMSection($1);if($self.isGroupDMSection($1.section))return $self.renderGroupDMSection($1);"
             },
             {
                 match: /getRowHeight(?:",|=)\((\i),(\i)\)=>{/,
@@ -137,8 +133,8 @@ export default definePlugin({
 
     makeProps(instance: any, { sections }: { sections: number[]; }) {
         this.instance = instance;
-        this.sections = sections;
-        this.directSectionIndex = sections.length - 1;
+        this.sections = [...sections];
+        this.directSectionIndex = this.sections.length - 1;
 
         this.sections.push(...this.getSections());
 
@@ -148,21 +144,13 @@ export default definePlugin({
             this.sections[this.groupSectionIndex] = settings.store.groupCollapsed ? 0 : this.getGroupDMs().length || 1;
         }
 
-        if (this.getDirectDMCount() === 0) {
+        if (this.getDirectDMCount() === 0 && this.directSectionIndex != null) {
             this.sections[this.directSectionIndex] = 0;
         }
 
         return {
             sections: this.sections,
             chunkSize: this.getChunkSize(),
-        };
-    },
-
-    makeDirectSpanProps() {
-        return {
-            onClick: () => this.toggleDirectCollapse(),
-            role: "button",
-            style: { cursor: "pointer" }
         };
     },
 
@@ -200,6 +188,35 @@ export default definePlugin({
         forceUpdateGroupDms?.();
     },
 
+    renderDirectDMSection: ErrorBoundary.wrap(({ section }: { section: number; }) => {
+        const self = this as any;
+        if (!self.isDirectDMSection(section)) return null;
+
+        const collapsed = settings.store.directCollapsed;
+        const count = self.getDirectDMCount();
+
+        return React.createElement(
+            React.Fragment,
+            null,
+            React.createElement(
+                Button,
+                {
+                    variant: "none",
+                    size: "min",
+                    className: classes(headerClasses.privateChannelsHeaderContainer, "vc-group-dms-section-container", "vc-group-dms-direct-section", collapsed && "vc-group-dms-collapsed"),
+                    onClick: () => self.toggleDirectCollapse(),
+                    title: "Direct Messages",
+                    type: "button",
+                },
+                React.createElement("span", { className: "vc-group-dms-section-header" },
+                    React.createElement("span", { className: headerClasses.headerText }, `Direct Messages (${count})`),
+                    React.createElement("span", { className: "vc-group-dms-collapse-icon", "aria-hidden": true }, collapsed ? "▸" : "▾")
+                )
+            ),
+            React.createElement(Divider, { className: "vc-group-dms-separator" })
+        );
+    }, { noop: true }),
+
     renderGroupDMSection: ErrorBoundary.wrap(({ section }: { section: number; }) => {
         const self = this as any;
         if (!self.isGroupDMSection(section)) return null;
@@ -215,7 +232,7 @@ export default definePlugin({
                 {
                     variant: "none",
                     size: "min",
-                    className: classes(headerClasses.privateChannelsHeaderContainer, "vc-group-dms-section-container", collapsed && "vc-group-dms-collapsed"),
+                    className: classes(headerClasses.privateChannelsHeaderContainer, "vc-group-dms-section-container", "vc-group-dms-group-section", collapsed && "vc-group-dms-collapsed"),
                     onClick: () => self.toggleGroupCollapse(),
                     title: "Group DMs",
                     type: "button",

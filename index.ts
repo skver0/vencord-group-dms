@@ -14,6 +14,7 @@ const SelectedChannelActionCreators = findByPropsLazy("selectPrivateChannel");
 let sidebarObserver: MutationObserver | undefined;
 let sidebarMount: HTMLDivElement | undefined;
 let sidebarRoot: ReturnType<typeof createRoot> | undefined;
+let mountRetryHandle: number | undefined;
 
 const settings = definePluginSettings({
     groupCollapsed: {
@@ -120,7 +121,7 @@ function GroupsPanel() {
 
 function mountGroupsPanel() {
     const sidebar = document.querySelector(".privateChannels_e6b769");
-    if (!sidebar) return;
+    if (!sidebar) return false;
 
     const friendsButton = sidebar.querySelector('[data-list-item-id$="___friends"]');
     const friendsContainer = friendsButton?.closest(".friendsButtonContainer_e6b769");
@@ -143,10 +144,23 @@ function mountGroupsPanel() {
     }
 
     sidebarRoot.render(React.createElement(GroupsPanel));
+    return true;
 }
 
 function startSidebarObserver() {
-    mountGroupsPanel();
+    const tryMount = () => {
+        if (mountGroupsPanel()) {
+            if (mountRetryHandle != null) {
+                cancelAnimationFrame(mountRetryHandle);
+                mountRetryHandle = undefined;
+            }
+            return;
+        }
+
+        mountRetryHandle = requestAnimationFrame(tryMount);
+    };
+
+    tryMount();
 
     sidebarObserver = new MutationObserver(() => mountGroupsPanel());
     sidebarObserver.observe(document.body, { childList: true, subtree: true });
@@ -155,6 +169,10 @@ function startSidebarObserver() {
 function stopSidebarObserver() {
     sidebarObserver?.disconnect();
     sidebarObserver = undefined;
+    if (mountRetryHandle != null) {
+        cancelAnimationFrame(mountRetryHandle);
+        mountRetryHandle = undefined;
+    }
     sidebarRoot?.unmount();
     sidebarRoot = undefined;
     sidebarMount?.remove();

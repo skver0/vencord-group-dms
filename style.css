@@ -2,6 +2,59 @@
   padding: 0 0 8px;
 }
 
+.vc-group-dms-launcher {
+  width: calc(100% - 16px);
+  max-width: none;
+  margin: 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  box-sizing: border-box;
+  padding: 6px 8px;
+}
+
+.vc-group-dms-launcher-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vc-group-dms-launcher-subtitle {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.vc-group-dms-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vc-group-dms-modal-search {
+  width: 100%;
+}
+
+.vc-group-dms-modal-divider {
+  margin: 0;
+}
+
+.vc-group-dms-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.vc-group-dms-modal-empty {
+  padding: 12px 8px;
+  color: var(--text-muted);
+}
+
 .vc-group-dms-panel {
   display: flex;
   flex-direction: column;

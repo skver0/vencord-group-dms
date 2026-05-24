@@ -133,20 +133,13 @@ export default definePlugin({
 
     makeProps(instance: any, { sections }: { sections: number[]; }) {
         this.instance = instance;
-        this.sections = [...sections];
-        this.directSectionIndex = this.sections.length - 1;
+        this.directSectionIndex = 0;
+        this.groupSectionIndex = 1;
 
-        this.sections.push(...this.getSections());
-
-        this.groupSectionIndex = this.sections.length - 1;
-
-        if (this.groupSectionIndex != null) {
-            this.sections[this.groupSectionIndex] = settings.store.groupCollapsed ? 0 : this.getGroupDMs().length || 1;
-        }
-
-        if (this.getDirectDMCount() === 0 && this.directSectionIndex != null) {
-            this.sections[this.directSectionIndex] = 0;
-        }
+        this.sections = [
+            settings.store.directCollapsed ? 0 : (this.getDirectDMCount() || 1),
+            settings.store.groupCollapsed ? 0 : (this.getGroupDMs().length || 1)
+        ];
 
         return {
             sections: this.sections,
@@ -156,7 +149,7 @@ export default definePlugin({
 
     getChunkSize() {
         const sectionHeaderSizePx = 2 * 40;
-        const totalRows = this.getDirectDMCount() + this.getGroupDMs().length;
+        const totalRows = (settings.store.directCollapsed ? 0 : this.getDirectDMCount()) + (settings.store.groupCollapsed ? 0 : this.getGroupDMs().length);
         return (sectionHeaderSizePx + totalRows * 44 + DEFAULT_CHUNK_SIZE) * 1.5;
     },
 

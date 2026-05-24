@@ -7,8 +7,7 @@ import { Divider } from "@components/Divider";
 import definePlugin, { StartAt } from "@utils/types";
 import { Channel } from "@vencord/discord-types";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
-import { Avatar, ChannelStore, IconUtils, Modal, openModal, React, RelationshipStore, Text, TextInput, useMemo, useState, useStateFromStores, UserStore, createRoot } from "@webpack/common";
-import type { RenderModalProps } from "@vencord/discord-types";
+import { Avatar, ChannelStore, IconUtils, React, RelationshipStore, Text, TextInput, useMemo, useState, useStateFromStores, UserStore, createRoot } from "@webpack/common";
 
 const PrivateChannelSortStore = findStoreLazy("PrivateChannelSortStore") as { getPrivateChannelIds: () => string[]; };
 const SelectedChannelActionCreators = findByPropsLazy("selectPrivateChannel");
@@ -86,7 +85,8 @@ function renderGroupDMRow(channel: Channel, onClose: () => void) {
     );
 }
 
-function GroupsModal({ modalProps }: { modalProps: RenderModalProps; }) {
+function GroupDMsPanel() {
+    const [expanded, setExpanded] = useState(true);
     const [search, setSearch] = useState("");
     const groupDMs = useStateFromStores([ChannelStore], getGroupDMs);
 
@@ -98,53 +98,46 @@ function GroupsModal({ modalProps }: { modalProps: RenderModalProps; }) {
     }, [groupDMs, search]);
 
     return (
-        <Modal
-            {...modalProps}
-            size="lg"
-            title={`Group Chats (${groupDMs.length})`}
-        >
-            <div className="vc-group-dms-modal">
-                <TextInput
-                    value={search}
-                    onChange={setSearch}
-                    placeholder="Search private groups"
-                    className="vc-group-dms-modal-search"
-                />
+        <div className="vc-group-dms-panel">
+            <Button
+                variant="none"
+                size="min"
+                className="vc-group-dms-launcher"
+                onClick={() => setExpanded(current => !current)}
+                type="button"
+                title="Toggle group chats"
+            >
+                <BaseText tag="span" size="sm" className="vc-group-dms-launcher-title">Groups</BaseText>
+                <Text variant="text-xs/medium" className="vc-group-dms-launcher-subtitle">{`${groupDMs.length} Group${groupDMs.length === 1 ? "" : "s"}`}</Text>
+                <span className="vc-group-dms-collapse-icon" aria-hidden="true">{expanded ? "▾" : "▸"}</span>
+            </Button>
 
-                <Divider className="vc-group-dms-modal-divider" />
+            {expanded && (
+                <>
+                    <TextInput
+                        value={search}
+                        onChange={setSearch}
+                        placeholder="Search private groups"
+                        className="vc-group-dms-panel-search"
+                    />
 
-                <div className="vc-group-dms-modal-list">
-                    {filteredGroupDMs.length > 0 ? filteredGroupDMs.map(channel => renderGroupDMRow(channel, modalProps.onClose)) : (
-                        <BaseText tag="div" size="sm" className="vc-group-dms-modal-empty">
-                            No group chats match this search.
-                        </BaseText>
-                    )}
-                </div>
-            </div>
-        </Modal>
+                    <Divider className="vc-group-dms-modal-divider" />
+
+                    <div className="vc-group-dms-panel-list">
+                        {filteredGroupDMs.length > 0 ? filteredGroupDMs.map(channel => renderGroupDMRow(channel, () => { })) : (
+                            <BaseText tag="div" size="sm" className="vc-group-dms-panel-empty">
+                                No group chats match this search.
+                            </BaseText>
+                        )}
+                    </div>
+                </>
+            )}
+        </div>
     );
-}
-
-function openGroupsModal() {
-    openModal(modalProps => <GroupsModal modalProps={modalProps} />);
 }
 
 function GroupDMsLauncher() {
-    const groupCount = useStateFromStores([ChannelStore], () => getGroupDMs().length);
-
-    return (
-        <Button
-            variant="none"
-            size="min"
-            className="vc-group-dms-launcher"
-            onClick={openGroupsModal}
-            type="button"
-            title="Open group chats"
-        >
-            <BaseText tag="span" size="sm" className="vc-group-dms-launcher-title">Groups</BaseText>
-            <Text variant="text-xs/medium" className="vc-group-dms-launcher-subtitle">{`${groupCount} Group${groupCount === 1 ? "" : "s"}`}</Text>
-        </Button>
-    );
+    return <GroupDMsPanel />;
 }
 
 function mountGroupsButton() {

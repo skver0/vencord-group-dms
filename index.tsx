@@ -29,7 +29,7 @@ let sidebarRoot: ReturnType<typeof createRoot> | undefined;
 
 function getGroupDMName(channel: Channel) {
     return channel.name || channel.recipients
-        .map(UserStore.getUser)
+        .map(id => UserStore.getUser(id))
         .filter(Boolean)
         .map((user: any) => RelationshipStore.getNickname(user.id) || user.username || user.globalName || user.displayName || user.id)
         .join(", ");
@@ -39,7 +39,7 @@ function getShortGroupDMName(channel: Channel) {
     if (channel.name) return channel.name;
 
     const recipients = channel.recipients
-        .map(UserStore.getUser)
+        .map(id => UserStore.getUser(id))
         .filter(Boolean)
         .map((user: any) => RelationshipStore.getNickname(user.id) || user.username || user.globalName || user.displayName || user.id);
 
@@ -51,7 +51,7 @@ function getShortGroupDMName(channel: Channel) {
 
 function getGroupDMSearchText(channel: Channel) {
     const recipientNames = channel.recipients
-        .map(UserStore.getUser)
+        .map(id => UserStore.getUser(id))
         .filter(Boolean)
         .map((user: any) => `${RelationshipStore.getNickname(user.id) || ""} ${user.username || ""} ${user.globalName || ""} ${user.displayName || ""} ${user.id}`.trim())
         .join(" ");
@@ -82,7 +82,7 @@ function renderGroupDMRow(channel: Channel, onClose: () => void) {
             type="button"
         >
             <Avatar
-                src={IconUtils.getChannelIconURL({ id: channel.id, icon: channel.icon, size: 32 })}
+                src={IconUtils.getChannelIconURL({ id: channel.id, icon: channel.icon, size: 32 }) ?? ""}
                 size="SIZE_32"
                 className="vc-group-dms-row-icon"
             />

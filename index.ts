@@ -122,14 +122,20 @@ function mountGroupsPanel() {
     const sidebar = document.querySelector(".privateChannels_e6b769");
     if (!sidebar) return;
 
-    const scroller = sidebar.querySelector(".scroller__99e7c");
+    const friendsButton = sidebar.querySelector('[data-list-item-id$="___friends"]');
+    const friendsContainer = friendsButton?.closest(".friendsButtonContainer_e6b769");
     if (!sidebarMount) {
         sidebarMount = document.createElement("div");
         sidebarMount.className = "vc-group-dms-mount";
     }
 
     if (!sidebarMount.isConnected) {
-        sidebar.insertBefore(sidebarMount, scroller ?? null);
+        if (friendsContainer?.parentElement) {
+            friendsContainer.parentElement.insertBefore(sidebarMount, friendsContainer.nextSibling);
+        } else {
+            const scroller = sidebar.querySelector(".scroller__99e7c");
+            sidebar.insertBefore(sidebarMount, scroller ?? null);
+        }
     }
 
     if (!sidebarRoot) {

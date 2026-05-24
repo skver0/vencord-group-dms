@@ -2,12 +2,22 @@ import "./style.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { BaseText } from "@components/BaseText";
-import { Button } from "@components/Button";
 import { Divider } from "@components/Divider";
 import definePlugin, { StartAt } from "@utils/types";
 import { Channel } from "@vencord/discord-types";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
-import { Avatar, ChannelStore, IconUtils, React, RelationshipStore, Text, TextInput, useMemo, useState, useStateFromStores, UserStore, createRoot } from "@webpack/common";
+import { Avatar, ChannelStore, IconUtils, React, RelationshipStore, Text, TextInput, useEffect, useMemo, useState, useStateFromStores, UserStore, createRoot } from "@webpack/common";
+import { definePluginSettings } from "@api/Settings";
+import { OptionType } from "@utils/types";
+
+export const settings = definePluginSettings({
+    groupCollapsed: {
+        type: OptionType.BOOLEAN,
+        description: "Collapse the Groups panel",
+        default: false,
+        hidden: true
+    }
+});
 
 const PrivateChannelSortStore = findStoreLazy("PrivateChannelSortStore") as { getPrivateChannelIds: () => string[]; };
 const SelectedChannelActionCreators = findByPropsLazy("selectPrivateChannel");
@@ -64,31 +74,34 @@ function openGroupDM(channelId: string, onClose?: () => void) {
 
 function renderGroupDMRow(channel: Channel, onClose: () => void) {
     return (
-        <Button
+        <button
             key={channel.id}
-            variant="none"
-            size="min"
             className="vc-group-dms-row"
             onClick={() => openGroupDM(channel.id, onClose)}
             title={getGroupDMName(channel)}
             type="button"
         >
             <Avatar
-                src={IconUtils.getChannelIconURL({ id: channel.id, icon: channel.icon, size: 32 }) ?? ""}
+                src={IconUtils.getChannelIconURL({ id: channel.id, icon: channel.icon, size: 32 })}
+                size="SIZE_32"
                 className="vc-group-dms-row-icon"
             />
             <div className="vc-group-dms-row-meta">
                 <BaseText tag="div" size="sm" className="vc-group-dms-row-name">{getShortGroupDMName(channel)}</BaseText>
                 <Text variant="text-xs/medium" className="vc-group-dms-row-subtitle">{`${channel.recipients.length + 1} Members`}</Text>
             </div>
-        </Button>
+        </button>
     );
 }
 
 function GroupDMsPanel() {
-    const [expanded, setExpanded] = useState(true);
+    const [expanded, setExpanded] = useState(!settings.store.groupCollapsed);
     const [search, setSearch] = useState("");
     const groupDMs = useStateFromStores([ChannelStore], getGroupDMs);
+
+    useEffect(() => {
+        settings.store.groupCollapsed = !expanded;
+    }, [expanded]);
 
     const filteredGroupDMs = useMemo(() => {
         const normalizedSearch = search.trim().toLowerCase();
@@ -99,9 +112,7 @@ function GroupDMsPanel() {
 
     return (
         <div className="vc-group-dms-panel">
-            <Button
-                variant="none"
-                size="min"
+            <button
                 className="vc-group-dms-launcher"
                 onClick={() => setExpanded(current => !current)}
                 type="button"
@@ -110,7 +121,7 @@ function GroupDMsPanel() {
                 <BaseText tag="span" size="sm" className="vc-group-dms-launcher-title">Groups</BaseText>
                 <Text variant="text-xs/medium" className="vc-group-dms-launcher-subtitle">{`${groupDMs.length} Group${groupDMs.length === 1 ? "" : "s"}`}</Text>
                 <span className="vc-group-dms-collapse-icon" aria-hidden="true">{expanded ? "▾" : "▸"}</span>
-            </Button>
+            </button>
 
             {expanded && (
                 <>
@@ -161,13 +172,12 @@ function mountGroupsButton() {
 
     if (!sidebarRoot) {
         sidebarRoot = createRoot(sidebarMount);
+        sidebarRoot.render(
+            <ErrorBoundary>
+                <GroupDMsLauncher />
+            </ErrorBoundary>
+        );
     }
-
-    sidebarRoot.render(
-        <ErrorBoundary>
-            <GroupDMsLauncher />
-        </ErrorBoundary>
-    );
 
     return true;
 }

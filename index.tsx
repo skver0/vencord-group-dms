@@ -7,8 +7,7 @@ import { Divider } from "@components/Divider";
 import definePlugin, { StartAt } from "@utils/types";
 import { Channel } from "@vencord/discord-types";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
-import { Avatar, ChannelStore, IconUtils, React, RelationshipStore, Text, TextInput, useMemo, useState, useStateFromStores, UserStore, createRoot } from "@webpack/common";
-import { Modal, openModal } from "../../webpack/common/modals";
+import { Avatar, ChannelStore, IconUtils, Modal, openModal, React, RelationshipStore, Text, TextInput, useMemo, useState, useStateFromStores, UserStore, createRoot } from "@webpack/common";
 import type { RenderModalProps } from "@vencord/discord-types";
 
 const PrivateChannelSortStore = findStoreLazy("PrivateChannelSortStore") as { getPrivateChannelIds: () => string[]; };

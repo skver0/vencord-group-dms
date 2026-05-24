@@ -1,27 +1,24 @@
-.vc-group-dms-section-container.vc-btn-base {
+.vc-group-dms-mount {
+  padding: 0 0 8px;
+}
+
+.vc-group-dms-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 8px;
+}
+
+.vc-group-dms-panel-header.vc-btn-base {
   width: 100%;
   max-width: none;
-  box-sizing: border-box;
-  align-self: stretch;
-  justify-content: flex-start;
-  padding: 0;
-}
-
-.vc-group-dms-direct-section,
-.vc-group-dms-group-section {
-  display: flex;
-}
-
-.vc-group-dms-section-header {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 6px 8px;
   box-sizing: border-box;
+  padding: 6px 8px;
 }
 
-.vc-group-dms-section-header .headerText {
+.vc-group-dms-panel-title {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -35,8 +32,17 @@
   line-height: 1;
 }
 
-.vc-group-dms-collapsed .vc-group-dms-collapse-icon {
-  transform: rotate(-90deg);
+.vc-group-dms-panel-divider {
+  margin: 4px 0 6px;
+}
+
+.vc-group-dms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .vc-group-dms-row.vc-btn-base {
@@ -49,7 +55,6 @@
   max-width: none;
   justify-content: flex-start;
   box-sizing: border-box;
-  align-self: stretch;
 }
 
 .vc-group-dms-row:hover {
